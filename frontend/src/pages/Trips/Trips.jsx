@@ -108,13 +108,14 @@ const Trips = () => {
           cargo_weight: '',
           planned_distance: ''
         });
+        setError('');
         fetchData(); // Refresh all
       } else {
         const data = await res.json();
-        alert(`Error: ${data.message || 'Failed to create trip'}`);
+        setError(`Error: ${data.message || 'Failed to create trip'}`);
       }
     } catch (err) {
-      alert('Error creating trip');
+      setError('Error creating trip. Please check your connection.');
     }
   };
 
@@ -127,13 +128,14 @@ const Trips = () => {
       });
 
       if (res.ok) {
+        setError('');
         fetchData();
       } else {
         const data = await res.json();
-        alert(`Error: ${data.message || `Failed to ${action} trip`}`);
+        setError(`Error: ${data.message || `Failed to ${action} trip`}`);
       }
     } catch (err) {
-      alert(`Error trying to ${action} trip`);
+      setError(`Error trying to ${action} trip. Please check your connection.`);
     }
   };
 
@@ -145,9 +147,10 @@ const Trips = () => {
 
   const submitCompleteTrip = async () => {
     if (!finalOdometer) {
-      alert("Final odometer is required");
+      setError("Final odometer is required");
       return;
     }
+    setError('');
     await handleAction(completingTripId, 'complete', { final_odometer: Number(finalOdometer) });
     setIsCompleteModalOpen(false);
     setCompletingTripId(null);
@@ -188,6 +191,16 @@ const Trips = () => {
               <Navigation className="w-5 h-5 text-[#10bfa8]" />
               Create Trip
             </h2>
+
+            {error && (
+              <div className="mb-4 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+                <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
+                <div>
+                  <h3 className="text-sm font-medium">Action Failed</h3>
+                  <p className="mt-1 text-sm">{error}</p>
+                </div>
+              </div>
+            )}
 
             <form onSubmit={handleCreateTrip} className="space-y-4">
               <div>
