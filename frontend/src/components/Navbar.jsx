@@ -10,7 +10,7 @@ const Navbar = () => {
           Transit<span className="text-[#10bfa8]">Ops</span>
         </div>
 
-        {/* Nav Links */}
+        {/* Nav Links
         <div className="flex items-center gap-12 text-[14px] font-medium text-[#10233f]">
           <a href="#features" className="hover:text-[#10bfa8]">
             Features
@@ -31,9 +31,9 @@ const Navbar = () => {
           <a href="#contact" className="hover:text-[#10bfa8]">
             Contact
           </a>
-        </div>
+        </div> */}
 
-        {/* Buttons */}
+        {/* Buttons
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 rounded-md border border-gray-300 px-5 py-2.5 text-[14px] font-medium text-[#10233f] transition hover:bg-gray-50">
             <User size={17} />
@@ -44,7 +44,7 @@ const Navbar = () => {
             <UserPlus size={17} />
             Register
           </button>
-        </div>
+        </div> */}
 
       </div>
     </nav>
