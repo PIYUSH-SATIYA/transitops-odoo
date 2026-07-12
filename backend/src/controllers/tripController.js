@@ -17,7 +17,7 @@ export const getTrips = async (req, res) => {
 
 export const createTrip = async (req, res) => {
   try {
-    const { source, destination, vehicle_id, driver_id, cargo_weight, planned_distance } = req.body;
+    const { source, destination, vehicle_id, driver_id, cargo_weight, planned_distance, revenue } = req.body;
 
     // 1. Validate Vehicle
     const { data: vehicle, error: vehicleError } = await supabaseAdmin
@@ -54,6 +54,7 @@ export const createTrip = async (req, res) => {
         driver_id,
         cargo_weight,
         planned_distance,
+        revenue: revenue || 0,
         status: 'Draft'
       }])
       .select()

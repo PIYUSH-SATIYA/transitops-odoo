@@ -1,0 +1,2 @@
+ALTER TABLE public.vehicles ADD COLUMN region VARCHAR(100);
+ALTER TABLE public.trips ADD COLUMN revenue NUMERIC(12, 2) DEFAULT 0;

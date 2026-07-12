@@ -17,7 +17,7 @@ export const getVehicles = async (req, res) => {
 
 export const createVehicle = async (req, res) => {
   try {
-    const { registration_number, name, type, max_load_capacity, odometer, acquisition_cost, status } = req.body;
+    const { registration_number, name, type, max_load_capacity, odometer, acquisition_cost, region, status } = req.body;
 
     const { data, error } = await supabaseAdmin
       .from('vehicles')
@@ -28,6 +28,7 @@ export const createVehicle = async (req, res) => {
         max_load_capacity,
         odometer: odometer || 0,
         acquisition_cost,
+        region,
         status: status || 'Available'
       }])
       .select()
