@@ -8,6 +8,7 @@ import {
   Wrench,
   Receipt,
   LogOut,
+  BarChart3,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -42,6 +43,11 @@ const Sidebar = () => {
       name: "Expenses",
       path: "/app/expenses",
       icon: Receipt,
+    },
+    {
+      name: "Analytics",
+      path: "/app/analytics",
+      icon: BarChart3,
     },
   ];
 

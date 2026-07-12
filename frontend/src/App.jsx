@@ -20,6 +20,7 @@ import Drivers from "./pages/Drivers/Drivers";
 import Trips from "./pages/Trips/Trips";
 import Maintenance from "./pages/Maintenance/Maintenance";
 import Expenses from "./pages/Expenses/Expenses";
+import Analytics from "./pages/Analytics/Analytics";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -39,6 +40,7 @@ const router = createBrowserRouter(
         <Route path="trips" element={<Trips />} />
         <Route path="maintenance" element={<Maintenance />} />
         <Route path="expenses" element={<Expenses />} />
+        <Route path="analytics" element={<Analytics />} />
       </Route>
     </>
   )
