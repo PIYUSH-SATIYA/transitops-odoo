@@ -9,6 +9,7 @@ import {
   Receipt,
   LogOut,
   BarChart3,
+  Settings as SettingsIcon,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -48,6 +49,11 @@ const Sidebar = () => {
       name: "Analytics",
       path: "/app/analytics",
       icon: BarChart3,
+    },
+    {
+      name: "Settings",
+      path: "/app/settings",
+      icon: SettingsIcon,
     },
   ];
 

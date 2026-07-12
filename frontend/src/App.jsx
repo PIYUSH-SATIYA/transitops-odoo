@@ -21,6 +21,7 @@ import Trips from "./pages/Trips/Trips";
 import Maintenance from "./pages/Maintenance/Maintenance";
 import Expenses from "./pages/Expenses/Expenses";
 import Reports from "./pages/Reports/Reports";
+import Settings from "./pages/Settings/Settings";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -41,6 +42,7 @@ const router = createBrowserRouter(
         <Route path="maintenance" element={<Maintenance />} />
         <Route path="expenses" element={<Expenses />} />
         <Route path="analytics" element={<Reports />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
     </>
   )
