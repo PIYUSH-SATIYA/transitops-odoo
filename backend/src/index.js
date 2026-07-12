@@ -4,6 +4,14 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { supabase, supabaseAdmin } from './config/supabase.js';
 
+import authRoutes from './routes/authRoutes.js';
+import vehicleRoutes from './routes/vehicleRoutes.js';
+import driverRoutes from './routes/driverRoutes.js';
+import tripRoutes from './routes/tripRoutes.js';
+import maintenanceRoutes from './routes/maintenanceRoutes.js';
+import fuelExpenseRoutes from './routes/fuelExpenseRoutes.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
+
 dotenv.config();
 
 const app = express();
@@ -35,6 +43,15 @@ app.get('/api/supabase-status', async (req, res) => {
     res.status(500).json({ status: 'error', message: 'Failed to connect to Supabase', details: error.message });
   }
 });
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/drivers', driverRoutes);
+app.use('/api/trips', tripRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/expenses', fuelExpenseRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Start the server
 app.listen(PORT, () => {
