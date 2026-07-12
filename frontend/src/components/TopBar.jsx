@@ -1,20 +1,64 @@
 import { Bell, UserCircle } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 const TopBar = () => {
+  const location = useLocation();
+
+  const pageNames = {
+    "/app": "Dashboard",
+    "/app/vehicles": "Vehicles",
+    "/app/drivers": "Drivers",
+    "/app/trips": "Trips",
+    "/app/maintenance": "Maintenance",
+    "/app/expenses": "Expenses",
+  };
+
+  const pageName = pageNames[location.pathname] || "TransitOps";
+
+  // baad me backend / context se lena
+  const user = {
+    name: "Prayag",
+    role: "Fleet Manager",
+  };
+
   return (
-    <header className="h-[70px] bg-white border-b border-gray-200 flex items-center justify-end px-6 shadow-sm">
-      <div className="flex items-center gap-4">
-        <button className="text-gray-500 hover:text-gray-700 transition">
-          <Bell size={20} />
-        </button>
+    <header className="flex h-[70px] items-center justify-between border-b border-slate-200 bg-white px-6">
+      
+      {/* Current Page Name */}
+      <div>
+        <h1 className="text-xl font-semibold text-[#10233f]">
+          {pageName}
+        </h1>
+      </div>
+
+      {/* Right Side */}
+      <div className="flex items-center gap-5">
         
-        <div className="flex items-center gap-2 border-l pl-4 ml-2">
-          <div className="text-right hidden md:block">
-            <div className="text-sm font-medium text-gray-800">Fleet Manager</div>
-            <div className="text-xs text-gray-500">Admin Role</div>
+        {/* Notification */}
+        <button className="relative text-slate-400 transition hover:text-[#10bfa8]">
+          <Bell size={21} />
+
+          <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
+        </button>
+
+        {/* User */}
+        <div className="flex items-center gap-3 border-l border-slate-200 pl-5">
+          <UserCircle
+            size={36}
+            className="text-[#10bfa8]"
+          />
+
+          <div className="hidden md:block">
+            <p className="text-sm font-semibold text-[#10233f]">
+              {user.name}
+            </p>
+
+            <p className="text-xs text-slate-400">
+              {user.role}
+            </p>
           </div>
-          <UserCircle size={32} className="text-gray-400" />
         </div>
+
       </div>
     </header>
   );
