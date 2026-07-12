@@ -1,74 +1,10 @@
 import { useEffect, useState } from "react";
 import { Plus, Search, X, LoaderCircle } from "lucide-react";
-
-const dummyVehicles = [
-  {
-    _id: "1",
-    registrationNumber: "GJ01AB4521",
-    vehicleName: "VAN-05",
-    type: "Van",
-    maxLoadCapacity: 500,
-    capacityUnit: "kg",
-    odometer: 74000,
-    acquisitionCost: 620000,
-    status: "Available",
-  },
-  {
-    _id: "2",
-    registrationNumber: "GJ01AB9981",
-    vehicleName: "TRUCK-11",
-    type: "Truck",
-    maxLoadCapacity: 5,
-    capacityUnit: "Ton",
-    odometer: 183000,
-    acquisitionCost: 2450000,
-    status: "On Trip",
-  },
-  {
-    _id: "3",
-    registrationNumber: "GJ01AB1120",
-    vehicleName: "MINI-03",
-    type: "Mini",
-    maxLoadCapacity: 1,
-    capacityUnit: "Ton",
-    odometer: 66000,
-    acquisitionCost: 410000,
-    status: "In Shop",
-  },
-  {
-    _id: "4",
-    registrationNumber: "GJ01AB0008",
-    vehicleName: "VAN-09",
-    type: "Van",
-    maxLoadCapacity: 750,
-    capacityUnit: "kg",
-    odometer: 241900,
-    acquisitionCost: 590000,
-    status: "Retired",
-  },
-];
-
-const fetchVehicles = async () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(dummyVehicles);
-    }, 700);
-  });
-};
-
-const createVehicle = async (vehicleData) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        ...vehicleData,
-        _id: Date.now().toString(),
-      });
-    }, 500);
-  });
-};
+import axios from "axios";
 
 const Vehicles = () => {
   const [vehicles, setVehicles] = useState([]);
+
   const [typeFilter, setTypeFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [search, setSearch] = useState("");
@@ -80,15 +16,47 @@ const Vehicles = () => {
   const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
-    registrationNumber: "",
-    vehicleName: "",
+    registration_number: "",
+    name: "",
     type: "Van",
-    maxLoadCapacity: "",
-    capacityUnit: "kg",
+    max_load_capacity: "",
     odometer: "",
-    acquisitionCost: "",
+    acquisition_cost: "",
+    region: "",
     status: "Available",
   });
+
+  const getToken = () => {
+    return localStorage.getItem("token");
+  };
+
+  const fetchVehicles = async () => {
+    const token = getToken();
+
+    const response = await axios.get("/api/vehicles", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;
+  };
+
+  const createVehicle = async (vehicleData) => {
+    const token = getToken();
+
+    const response = await axios.post(
+      "/api/vehicles",
+      vehicleData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data;
+  };
 
   useEffect(() => {
     const getVehicles = async () => {
@@ -100,6 +68,11 @@ const Vehicles = () => {
         setVehicles(data);
       } catch (error) {
         console.log(error);
+
+        setError(
+          error.response?.data?.message ||
+            "Failed to fetch vehicles."
+        );
       } finally {
         setLoading(false);
       }
@@ -119,13 +92,13 @@ const Vehicles = () => {
 
   const resetForm = () => {
     setFormData({
-      registrationNumber: "",
-      vehicleName: "",
+      registration_number: "",
+      name: "",
       type: "Van",
-      maxLoadCapacity: "",
-      capacityUnit: "kg",
+      max_load_capacity: "",
       odometer: "",
-      acquisitionCost: "",
+      acquisition_cost: "",
+      region: "",
       status: "Available",
     });
 
@@ -143,44 +116,55 @@ const Vehicles = () => {
     setError("");
 
     if (
-      !formData.registrationNumber ||
-      !formData.vehicleName ||
-      !formData.maxLoadCapacity ||
-      !formData.odometer ||
-      !formData.acquisitionCost
+      !formData.registration_number ||
+      !formData.name ||
+      !formData.type ||
+      !formData.max_load_capacity ||
+      !formData.acquisition_cost
     ) {
       setError("Please fill all required fields.");
-      return;
-    }
 
-    const registrationExists = vehicles.some(
-      (vehicle) =>
-        vehicle.registrationNumber.toLowerCase() ===
-        formData.registrationNumber.toLowerCase()
-    );
-
-    if (registrationExists) {
-      setError("Registration number already exists.");
       return;
     }
 
     try {
       setCreating(true);
 
-      const newVehicle = await createVehicle({
-        ...formData,
-        registrationNumber: formData.registrationNumber.toUpperCase(),
-        maxLoadCapacity: Number(formData.maxLoadCapacity),
-        odometer: Number(formData.odometer),
-        acquisitionCost: Number(formData.acquisitionCost),
-      });
+      const vehicleData = {
+        registration_number:
+          formData.registration_number.toUpperCase(),
+
+        name: formData.name,
+
+        type: formData.type,
+
+        max_load_capacity: Number(
+          formData.max_load_capacity
+        ),
+
+        odometer: Number(formData.odometer || 0),
+
+        acquisition_cost: Number(
+          formData.acquisition_cost
+        ),
+
+        region: formData.region,
+
+        status: formData.status,
+      };
+
+      const newVehicle = await createVehicle(vehicleData);
 
       setVehicles((prev) => [newVehicle, ...prev]);
 
       closeModal();
     } catch (error) {
       console.log(error);
-      setError("Failed to create vehicle.");
+
+      setError(
+        error.response?.data?.message ||
+          "Failed to create vehicle."
+      );
     } finally {
       setCreating(false);
     }
@@ -188,14 +172,17 @@ const Vehicles = () => {
 
   const filteredVehicles = vehicles.filter((vehicle) => {
     const typeMatch =
-      typeFilter === "All" || vehicle.type === typeFilter;
+      typeFilter === "All" ||
+      vehicle.type === typeFilter;
 
     const statusMatch =
-      statusFilter === "All" || vehicle.status === statusFilter;
+      statusFilter === "All" ||
+      vehicle.status === statusFilter;
 
-    const searchMatch = vehicle.registrationNumber
-      .toLowerCase()
-      .includes(search.toLowerCase());
+    const searchMatch =
+      vehicle.registration_number
+        ?.toLowerCase()
+        .includes(search.toLowerCase());
 
     return typeMatch && statusMatch && searchMatch;
   });
@@ -222,8 +209,6 @@ const Vehicles = () => {
   return (
     <>
       <div className="w-full">
-        {/* Filters */}
-
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-4">
             <select
@@ -275,28 +260,38 @@ const Vehicles = () => {
           </button>
         </div>
 
-        {/* Vehicle Table */}
-
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="bg-slate-50">
                 <tr className="border-b border-slate-200 text-xs uppercase tracking-wider text-slate-400">
-                  <th className="px-5 py-4 font-semibold">Reg. No.</th>
+                  <th className="px-5 py-4 font-semibold">
+                    Reg. No.
+                  </th>
 
                   <th className="px-5 py-4 font-semibold">
                     Name / Model
                   </th>
 
-                  <th className="px-5 py-4 font-semibold">Type</th>
+                  <th className="px-5 py-4 font-semibold">
+                    Type
+                  </th>
 
-                  <th className="px-5 py-4 font-semibold">Capacity</th>
+                  <th className="px-5 py-4 font-semibold">
+                    Capacity
+                  </th>
 
-                  <th className="px-5 py-4 font-semibold">Odometer</th>
+                  <th className="px-5 py-4 font-semibold">
+                    Odometer
+                  </th>
 
-                  <th className="px-5 py-4 font-semibold">Acq. Cost</th>
+                  <th className="px-5 py-4 font-semibold">
+                    Acq. Cost
+                  </th>
 
-                  <th className="px-5 py-4 font-semibold">Status</th>
+                  <th className="px-5 py-4 font-semibold">
+                    Status
+                  </th>
                 </tr>
               </thead>
 
@@ -326,15 +321,15 @@ const Vehicles = () => {
                 ) : (
                   filteredVehicles.map((vehicle) => (
                     <tr
-                      key={vehicle._id}
+                      key={vehicle.id}
                       className="border-b border-slate-100 transition last:border-b-0 hover:bg-slate-50"
                     >
                       <td className="px-5 py-5 text-sm font-semibold text-[#10233f]">
-                        {vehicle.registrationNumber}
+                        {vehicle.registration_number}
                       </td>
 
                       <td className="px-5 py-5 text-sm font-medium text-slate-700">
-                        {vehicle.vehicleName}
+                        {vehicle.name}
                       </td>
 
                       <td className="px-5 py-5 text-sm text-slate-500">
@@ -342,15 +337,21 @@ const Vehicles = () => {
                       </td>
 
                       <td className="px-5 py-5 text-sm text-slate-500">
-                        {vehicle.maxLoadCapacity} {vehicle.capacityUnit}
+                        {vehicle.max_load_capacity} kg
                       </td>
 
                       <td className="px-5 py-5 text-sm text-slate-500">
-                        {vehicle.odometer.toLocaleString()} km
+                        {Number(
+                          vehicle.odometer
+                        ).toLocaleString()}{" "}
+                        km
                       </td>
 
                       <td className="px-5 py-5 text-sm text-slate-500">
-                        ₹{vehicle.acquisitionCost.toLocaleString("en-IN")}
+                        ₹
+                        {Number(
+                          vehicle.acquisition_cost
+                        ).toLocaleString("en-IN")}
                       </td>
 
                       <td className="px-5 py-5">
@@ -370,24 +371,20 @@ const Vehicles = () => {
           </div>
         </div>
 
-        {/* Business Rule */}
-
         <div className="mt-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="text-sm text-amber-700">
-            <span className="font-semibold">Business Rule:</span>{" "}
-            Registration number must be unique. Retired and In Shop vehicles
-            are hidden from trip dispatch.
+            <span className="font-semibold">
+              Business Rule:
+            </span>{" "}
+            Registration number must be unique. Retired and In
+            Shop vehicles are hidden from trip dispatch.
           </p>
         </div>
       </div>
 
-      {/* Add Vehicle Modal */}
-
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-5">
           <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
-            {/* Modal Header */}
-
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
               <div>
                 <h2 className="text-xl font-bold text-[#10233f]">
@@ -407,8 +404,6 @@ const Vehicles = () => {
               </button>
             </div>
 
-            {/* Form */}
-
             <form onSubmit={handleSubmit} className="p-6">
               {error && (
                 <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -424,8 +419,8 @@ const Vehicles = () => {
 
                   <input
                     type="text"
-                    name="registrationNumber"
-                    value={formData.registrationNumber}
+                    name="registration_number"
+                    value={formData.registration_number}
                     onChange={handleChange}
                     placeholder="GJ01AB4521"
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-[#10bfa8]"
@@ -439,8 +434,8 @@ const Vehicles = () => {
 
                   <input
                     type="text"
-                    name="vehicleName"
-                    value={formData.vehicleName}
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
                     placeholder="VAN-05"
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-[#10bfa8]"
@@ -466,30 +461,18 @@ const Vehicles = () => {
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-[#10233f]">
-                    Maximum Load Capacity
+                    Maximum Load Capacity (kg)
                   </label>
 
-                  <div className="flex">
-                    <input
-                      type="number"
-                      name="maxLoadCapacity"
-                      value={formData.maxLoadCapacity}
-                      onChange={handleChange}
-                      placeholder="500"
-                      min="1"
-                      className="w-full rounded-l-lg border border-r-0 border-slate-300 px-4 py-3 text-sm outline-none focus:border-[#10bfa8]"
-                    />
-
-                    <select
-                      name="capacityUnit"
-                      value={formData.capacityUnit}
-                      onChange={handleChange}
-                      className="rounded-r-lg border border-slate-300 bg-slate-50 px-3 text-sm outline-none"
-                    >
-                      <option value="kg">kg</option>
-                      <option value="Ton">Ton</option>
-                    </select>
-                  </div>
+                  <input
+                    type="number"
+                    name="max_load_capacity"
+                    value={formData.max_load_capacity}
+                    onChange={handleChange}
+                    placeholder="500"
+                    min="1"
+                    className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-[#10bfa8]"
+                  />
                 </div>
 
                 <div>
@@ -515,17 +498,48 @@ const Vehicles = () => {
 
                   <input
                     type="number"
-                    name="acquisitionCost"
-                    value={formData.acquisitionCost}
+                    name="acquisition_cost"
+                    value={formData.acquisition_cost}
                     onChange={handleChange}
                     placeholder="620000"
                     min="0"
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-[#10bfa8]"
                   />
                 </div>
-              </div>
 
-              {/* Form Actions */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[#10233f]">
+                    Region
+                  </label>
+
+                  <input
+                    type="text"
+                    name="region"
+                    value={formData.region}
+                    onChange={handleChange}
+                    placeholder="Gujarat"
+                    className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-[#10bfa8]"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[#10233f]">
+                    Status
+                  </label>
+
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleChange}
+                    className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm outline-none focus:border-[#10bfa8]"
+                  >
+                    <option value="Available">Available</option>
+                    <option value="On Trip">On Trip</option>
+                    <option value="In Shop">In Shop</option>
+                    <option value="Retired">Retired</option>
+                  </select>
+                </div>
+              </div>
 
               <div className="mt-7 flex items-center justify-end gap-3 border-t border-slate-200 pt-5">
                 <button
@@ -543,7 +557,10 @@ const Vehicles = () => {
                 >
                   {creating ? (
                     <>
-                      <LoaderCircle size={17} className="animate-spin" />
+                      <LoaderCircle
+                        size={17}
+                        className="animate-spin"
+                      />
 
                       Adding...
                     </>
