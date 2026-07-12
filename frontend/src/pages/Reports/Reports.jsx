@@ -4,7 +4,7 @@ import {
 } from 'recharts';
 import { LoaderCircle } from 'lucide-react';
 
-const Analytics = () => {
+const Reports = () => {
   const [kpis, setKpis] = useState(null);
   const [revenueData, setRevenueData] = useState([]);
   const [costData, setCostData] = useState([]);
@@ -263,4 +263,4 @@ const Analytics = () => {
   );
 };
 
-export default Analytics;
+export default Reports;
